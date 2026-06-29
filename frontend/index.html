@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Taelor Chat</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f6f3ef;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      width: 420px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #b08968;
+      color: white;
+      padding: 16px;
+      font-weight: bold;
+    }
+
+    #chat {
+      height: 450px;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      padding: 10px 12px;
+      border-radius: 12px;
+      max-width: 80%;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #b08968;
+      color: white;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #f1ece7;
+      color: #222;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid #eee;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background: #b08968;
+      color: white;
+      border: none;
+      padding: 0 18px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #9a6f4e;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    Taelor Style Assistant
+  </div>
+
+  <div id="chat"></div>
+
+  <div class="input-area">
+    <input id="msg" placeholder="Ask a question..." />
+    <button onclick="send()">Send</button>
+  </div>
+
+</div>
+
+<script>
+async function send() {
+  const input = document.getElementById("msg");
+  const msg = input.value;
+  if (!msg) return;
+
+  addMessage("You", msg, "user");
+  input.value = "";
+
+  const res = await fetch("http://127.0.0.1:8000/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ message: msg })
+  });
+
+  const data = await res.json();
+  addMessage("Bot", data.answer, "bot");
+}
+
+function addMessage(sender, text, type) {
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.innerText = text;
+  document.getElementById("chat").appendChild(div);
+  document.getElementById("chat").scrollTop = 999999;
+}
+</script>
+
+</body>
+</html>

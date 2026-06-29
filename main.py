@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -11,6 +12,14 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
