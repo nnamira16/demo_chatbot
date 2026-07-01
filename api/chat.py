@@ -8,9 +8,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-index = faiss.read_index(
-    os.path.join(BASE_DIR, "faiss_index", "index.faiss")
-)
+index = faiss.read_index(os.path.join(BASE_DIR, "faiss_index", "index.faiss"))
 
 with open(os.path.join(BASE_DIR, "faiss_index", "chunks.json"), "r") as f:
     chunks = json.load(f)
@@ -18,20 +16,24 @@ with open(os.path.join(BASE_DIR, "faiss_index", "chunks.json"), "r") as f:
 
 def handler(request):
     try:
-        
-        body = json.loads(request.body)
+        # 🔥 SAFE BODY PARSING FOR VERCEL
+        body = json.loads(request.body.decode("utf-8"))
         query = body.get("message", "")
 
-        # embed
+        if not query:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"response": "No message provided"})
+            }
+
+        # embedding
         q_emb = model.encode([query])
         q_emb = np.array(q_emb).astype("float32")
 
         # search
         _, I = index.search(q_emb, k=3)
 
-        results = [
-            chunks[i] for i in I[0] if i < len(chunks)
-        ]
+        results = [chunks[i] for i in I[0] if i < len(chunks)]
 
         return {
             "statusCode": 200,
@@ -40,7 +42,7 @@ def handler(request):
                 "Access-Control-Allow-Origin": "*"
             },
             "body": json.dumps({
-                "response": "\n\n".join(results) if results else "No results found."
+                "response": "\n\n".join(results) if results else "No results found"
             })
         }
 
@@ -48,6 +50,6 @@ def handler(request):
         return {
             "statusCode": 500,
             "body": json.dumps({
-                "error": str(e)
+                "response": f"Server error: {str(e)}"
             })
         }
