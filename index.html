@@ -108,14 +108,14 @@ async function send() {
   addMessage("You", msg, "user");
   input.value = "";
 
-  const res = await fetch("http://127.0.0.1:8000/chat", {
+  const res = await fetch("/api/chat", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ message: msg })
   });
 
   const data = await res.json();
-  addMessage("Bot", data.answer, "bot");
+  addMessage("Bot", data.response, "bot");
 }
 
 function addMessage(sender, text, type) {
