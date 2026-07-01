@@ -100,31 +100,69 @@
 </div>
 
 <script>
+// We keep track of history in a simple string to send to the backend
+let chatHistory = "";
+
 async function send() {
   const input = document.getElementById("msg");
-  const msg = input.value;
+  const msg = input.value.trim();
   if (!msg) return;
 
+  // 1. Render user message in UI
   addMessage("You", msg, "user");
   input.value = "";
 
-  const res = await fetch("/api/chatbot_api", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ message: msg })
-  });
+  // 2. Visual indicator that the bot is thinking
+  const typingDiv = addMessage("Bot", "...", "bot");
 
-  const data = await res.json();
-  addMessage("Bot", data.response, "bot");
+  try {
+    // 3. Make the fetch call matching FastAPI's ChatRequest model
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        question: msg,       // Changed from 'message' to 'question'
+        history: chatHistory 
+      })
+    });
+
+    if (!res.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await res.json();
+    
+    // Remove the typing indicator
+    typingDiv.remove();
+
+    // 4. Render the actual answer (matching FastAPI's 'answer' key)
+    addMessage("Bot", data.answer, "bot"); 
+
+    // 5. Update local history context for the next turn
+    chatHistory += `user: ${msg}\nassistant: ${data.answer}\n`;
+
+  } catch (error) {
+    console.error("Error calling API:", error);
+    typingDiv.innerText = "Sorry, something went wrong. Please try again.";
+  }
 }
 
 function addMessage(sender, text, type) {
   const div = document.createElement("div");
   div.className = "msg " + type;
   div.innerText = text;
-  document.getElementById("chat").appendChild(div);
-  document.getElementById("chat").scrollTop = 999999;
+  const chatWindow = document.getElementById("chat");
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return div; // Return the element so we can remove it if needed (like typing dots)
 }
+
+// Optional: Allow pressing "Enter" key to send messages
+document.getElementById("msg").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    send();
+  }
+});
 </script>
 
 </body>
