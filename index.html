@@ -108,7 +108,7 @@ async function send() {
   addMessage("You", msg, "user");
   input.value = "";
 
-  const res = await fetch("/api/chat", {
+  const res = await fetch("/api/chatbot_api", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ message: msg })
