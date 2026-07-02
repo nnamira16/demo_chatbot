@@ -48,6 +48,8 @@ def chat(data: ChatRequest):
 
     scored_chunks.sort(key=lambda x: x[0], reverse=True)
     top_docs = [chunk[1] for chunk in scored_chunks[:4]]
+    print("TOP MATCH:")
+    print(top_docs[0][:500])
     context = "\n\n".join(top_docs)
 
     prompt = f"""
