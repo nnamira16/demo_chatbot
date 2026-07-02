@@ -36,22 +36,56 @@ if not os.path.exists(langchain_pkl_path):
     print(f"❌ Error: Could not find {langchain_pkl_path}.")
     exit()
 
+# print("📥 Unpacking LangChain's raw text data...")
+# with open(langchain_pkl_path, "rb") as f:
+#     faiss_data = pickle.load(f)
+#     docstore = faiss_data[0]
 print("📥 Unpacking LangChain's raw text data...")
+
 with open(langchain_pkl_path, "rb") as f:
     faiss_data = pickle.load(f)
     docstore = faiss_data[0]
 
-# Extract the dictionary values safely
-raw_documents = docstore._dict.values()
+raw_documents = list(docstore._dict.values())
+
+print("Document count:", len(raw_documents))
+
+if len(raw_documents) > 0:
+    print("First document type:", type(raw_documents[0]))
+    print("First document dict:", raw_documents[0].__dict__)
+
+# #debug
+# print("Document count:", len(list(raw_documents)))
+
+# raw_documents = list(raw_documents)
+
+# print("First document type:", type(raw_documents[0]))
+# print("First document dict:", raw_documents[0].__dict__) 
+
+
+# # Extract the dictionary values safely
+# raw_documents = docstore._dict.values()
 
 knowledge_base = []
 
 print(f"🧠 Generating Gemini cloud embeddings for {len(raw_documents)} chunks...")
 for i, doc in enumerate(raw_documents):
     # Fallback in case the object structure changed slightly during unpickling
-    text_content = getattr(doc, 'page_content', None) or doc.__dict__.get('page_content')
+    #  NEW EXTRACTION LOGIC (Digs into the nested __dict__)
+    doc_dict = getattr(doc, '__dict__', {})
     
+    # Check if our dummy class double-nested the state
+    if '__dict__' in doc_dict:
+        text_content = doc_dict['__dict__'].get('page_content', None)
+    else:
+        text_content = doc_dict.get('page_content', None)
+        
+    # Standard fallback just in case
+    if not text_content and hasattr(doc, 'page_content'):
+        text_content = doc.page_content
+
     if not text_content:
+        print(f"Warning: Could not find page_content for chunk {i+1}. Skipping.")
         continue
 
     response = client.models.embed_content(
