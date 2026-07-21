@@ -106,6 +106,8 @@ Answer using ONLY the information provided below.
 If a useful link appears in the context,
 include it in your answer.
 
+Do not inclue Skip to Conent. Or any other unrelated text.
+
 Retrieved Context:
 {context}
 
