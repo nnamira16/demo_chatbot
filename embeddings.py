@@ -19,12 +19,11 @@ for file in Path("data").glob("*.md"):
         encoding="utf-8"
     )
 
-    # clean markdown
     text = re.sub(
-        r"\[([^\]]+)\]\([^)]+\)",
-        r"\1",
-        text
-    )
+    r"\[([^\]]+)\]\(([^)]+)\)",
+    r"\1\nURL: \2",
+    text
+)
 
     # simple chunking
     chunks = [
