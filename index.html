@@ -150,11 +150,20 @@ async function send() {
 function addMessage(sender, text, type) {
   const div = document.createElement("div");
   div.className = "msg " + type;
-  div.innerText = text;
+
+  // Convert URLs into clickable links
+  const linkedText = text.replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank">$1</a>'
+  );
+
+  div.innerHTML = linkedText;
+
   const chatWindow = document.getElementById("chat");
   chatWindow.appendChild(div);
   chatWindow.scrollTop = chatWindow.scrollHeight;
-  return div; // Return the element so we can remove it if needed (like typing dots)
+
+  return div;
 }
 
 
