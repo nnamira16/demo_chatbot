@@ -100,7 +100,7 @@
       animation-delay: 0.2s;
     }
 
-    typing span:nth-child(3) {
+    .typing span:nth-child(3) {
       animation-delay: 0.4s;
     }
 
@@ -169,7 +169,8 @@ async function send() {
     typingDiv.remove();
 
     // 4. Render the actual answer (matching FastAPI's 'answer' key)
-    addMessage("Bot", data.answer, "bot"); 
+    //addMessage("Bot", data.answer, "bot"); 
+    await addBotMessages(data.answer);
 
     // 5. Update local history context for the next turn
     chatHistory += `user: ${msg}\nassistant: ${data.answer}\n`;
@@ -213,6 +214,42 @@ function addMessage(sender, text, type) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
   return div;
+}
+
+//making it async to handle multiple messages from the bot
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function addBotMessages(text) {
+
+    // Split on blank lines first
+    let parts = text
+        .split(/\n\s*\n/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+
+    // If Gemini didn't use blank lines,
+    // split long paragraphs into sentences.
+    if (parts.length === 1) {
+
+        parts = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+        // Group every two sentences together
+        const grouped = [];
+
+        for (let i = 0; i < parts.length; i += 2) {
+            grouped.push(parts.slice(i, i + 2).join(" "));
+        }
+
+        parts = grouped;
+    }
+
+    for (const part of parts) {
+        addMessage("Bot", part, "bot");
+        await sleep(500);
+    }
 }
 
 
