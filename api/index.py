@@ -22,12 +22,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+key = api_key=os.getenv("GEMINI_API_KEY")
+client = genai.Client(
+    api_key=key
+)
+print("Key loaded:", repr(key))
+print("Starts with:", key[:10] if key else None)
+print("Length:", len(key) if key else None)
+
+
 # Debug
 print("GEMINI KEY FOUND:", bool(os.getenv("GEMINI_API_KEY")))
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+# client = genai.Client(
+#     api_key=os.getenv("GEMINI_API_KEY")
+# )
 
 # Load embeddings
 BASE_DIR = os.path.dirname(__file__)
@@ -111,6 +120,14 @@ Do not inclue Skip to Conent. Or any other unrelated text.
 Do not make assumptions about a customer's gender, idenity, or ability to use TAELOR.
 If a customer asks whether they can use Taelor based on gender, explain that Taelor specializes in menswear but anyone interested in the service is welcome to explore it.
 If information is unclear, acknowledge the limitation and suggest contacting Taelor support for more guidance. 
+Format guidance as follows:
+- Separate ideas with a blank line.
+- Use numbered steps for instructions.
+- Use bullet points only when listing options.
+- Never write one long paragraph.
+- End with a friendly follow-up question when appropriate.
+
+Answer using ONLY the retrieved context.
 
 Retrieved Context:
 {context}

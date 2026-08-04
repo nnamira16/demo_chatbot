@@ -6,10 +6,14 @@ from google import genai
 import os
 
 load_dotenv()
-
+key = api_key=os.getenv("GEMINI_API_KEY")
 client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
+    api_key=key
 )
+print("Key loaded:", repr(key))
+print("Starts with:", key[:10] if key else None)
+print("Length:", len(key) if key else None)
+
 
 knowledge_base = []
 
