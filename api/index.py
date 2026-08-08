@@ -6,10 +6,11 @@ import numpy as np
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from openai import OpenAI
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
-from google import genai
+
 
 load_dotenv()
 
@@ -22,17 +23,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-key = api_key=os.getenv("GEMINI_API_KEY")
-client = genai.Client(
-    api_key=key
-)
-print("Key loaded:", repr(key))
+key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=key)
+
 print("Starts with:", key[:10] if key else None)
 print("Length:", len(key) if key else None)
 
 
 # Debug
-print("GEMINI KEY FOUND:", bool(os.getenv("GEMINI_API_KEY")))
+print("OPENAI KEY FOUND:", bool(os.getenv("OPENAI_API_KEY")))
 
 # client = genai.Client(
 #     api_key=os.getenv("GEMINI_API_KEY")
@@ -65,13 +64,13 @@ def root():
 def chat(data: ChatRequest):
 
     # Create embedding for question
-    q_response = client.models.embed_content(
-        model="gemini-embedding-2",
-        contents=data.question
+    q_response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=data.question
     )
 
     query_vector = np.array(
-        q_response.embeddings[0].values
+        q_response.data[0].embedding
     )
 
     scored_chunks = []
@@ -139,11 +138,11 @@ Question:
 {data.question}
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
+    response = client.responses.create(
+    model="gpt-5",
+    input=prompt
     )
 
     return {
-        "answer": response.text
+        "answer": response.output_text
     }
