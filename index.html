@@ -145,6 +145,20 @@
       animation-delay: 0.4s;
     }
 
+    .msg ul,
+    .msg ol {
+      margin: 8px 0;
+      padding-left: 22px;
+    }
+
+    .msg li {
+      margin-bottom: 6px;
+    }
+
+    .msg p {
+      margin: 6px 0;
+    }
+
     #closeChat {
       background: transparent;
       color: white;
@@ -277,6 +291,36 @@ function addMessage(sender, text, type) {
     /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
     '<a href="$2" target="_blank">$1</a>'
   );
+
+  text = text.replace(
+    /(?:^|\n)((?:[-*] .+(?:\n|$))+)/g,
+    function(match, list) {
+      const items = list
+        .trim()
+        .split("\n")
+        .map(item => item.replace(/^[-*]\s+/, "").trim())
+        .map(item => `<li>${item}</li>`)
+        .join("");
+
+      return `<ul>${items}</ul>`;
+    }
+  );
+
+  text = text.replace(
+    /(?:^|\n)(\d+\..+(?:\n|$))+/g,
+    function(match, list) {
+      const items = list
+        .trim()
+        .split("\n")
+        .map(item => item.replace(/^\d+\.\s+/, "").trim())
+        .map(item => `<li>${item}</li>`)
+        .join("");
+
+      return `<ol>${items}</ol>`;
+    }
+  );
+
+  text = text.replace(/\n/g, "<br>");
 
   // Convert plain URLs into clickable links
   text = text.replace(
