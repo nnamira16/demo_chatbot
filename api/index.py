@@ -2,7 +2,7 @@
 
 import os
 import pickle
-from time import time
+import time
 import numpy as np
 
 from fastapi import FastAPI
