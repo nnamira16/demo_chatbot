@@ -2,6 +2,7 @@
 
 import os
 import pickle
+from time import time
 import numpy as np
 
 from fastapi import FastAPI
@@ -62,12 +63,23 @@ def root():
 @app.post("/api/chat")
 @app.post("/chat")
 def chat(data: ChatRequest):
+    total_start = time.time()
+
+    print("\n==============================")
+    print("NEW CHAT REQUEST")
+    print("==============================")
+
+    # Create embedding for question
+    embedding_start = time.time()
 
     # Create embedding for question
     q_response = client.embeddings.create(
         model="text-embedding-3-small",
         input=data.question
     )
+
+    embedding_time = time.time() - embedding_start
+    print(f"Embedding time: {embedding_time:.2f} seconds")
 
     query_vector = np.array(
         q_response.data[0].embedding
@@ -96,6 +108,10 @@ def chat(data: ChatRequest):
         chunk[1]
         for chunk in scored_chunks[:4]
     ]
+    retrieval_time = time.time() - embedding_start
+
+    print(f"Embedding + retrieval time: {retrieval_time:.2f} seconds")
+    print(f"Knowledge base size: {len(knowledge_base)} chunks")
 
     # IMPORTANT DEBUGGING
     print("\nQUESTION:")
@@ -139,10 +155,20 @@ Question:
 {data.question}
 """
 
+    generation_start = time.time()
+
     response = client.responses.create(
-    model="gpt-5",
-    input=prompt
+        model="gpt-5",
+        input=prompt
     )
+
+    generation_time = time.time() - generation_start
+
+    print(f"OpenAI generation time: {generation_time:.2f} seconds")
+
+    total_time = time.time() - total_start
+
+    print(f"TOTAL REQUEST TIME: {total_time:.2f} seconds")
 
     return {
         "answer": response.output_text
