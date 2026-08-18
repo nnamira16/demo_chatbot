@@ -40,7 +40,7 @@ for file in Path("data").glob("*.md"):
             400
         )
     ]
-    print(f"Found {len(chunks)} chunks")
+    #print(f"Found {len(chunks)} chunks")
 
     # for chunk in chunks:
 
@@ -68,9 +68,9 @@ for file in Path("data").glob("*.md"):
             "embedding": embedding
         })
 
-        print(
-            f"   Processed chunk {i+1}/{len(chunks)}"
-        )
+        #print(
+        #    f"   Processed chunk {i+1}/{len(chunks)}"
+        #)
 
 with open(
     "embeddings.pkl",

@@ -1,9 +1,14 @@
 import asyncio
 from pathlib import Path
+from urllib.parse import urlparse, parse_qs
 
 from crawl4ai import AsyncWebCrawler
 from streamlit import markdown
 
+BLOG_PAGES = [
+    f"https://taelor.style/blogs/mens-style?page={page}"
+    for page in range(1, 15)
+]
 
 TAELOR_URLS = [
     "https://taelor.style/", 
@@ -18,13 +23,32 @@ TAELOR_URLS = [
     "https://taelor.style/blogs/news",
     "https://taelor.style/pages/faq",
     "https://taelor.style/blogs/mens-style"
-]
+] + BLOG_PAGES
 
+
+def safe_filename(url):
+    parsed = urlparse(url)
+
+    path = (
+        parsed.path
+        .strip("/")
+        .replace("/", "_")
+        .replace("-", "_")
+    )
+
+    page = parse_qs(parsed.query).get("page", [None])[0]
+
+    if page:
+        return f"{path}_page_{page}"
+
+    return path or "homepage"
 
 
 async def crawl_taelor():
 
     print("Starting Taelor crawl...")
+
+    Path("data").mkdir(exist_ok=True)
 
     async with AsyncWebCrawler() as crawler:
 
@@ -41,17 +65,7 @@ async def crawl_taelor():
 
             print(f"✅ Success: {url}")
 
-            # Create a safe filename
-            filename = (
-                url.replace("https://taelor.style/", "")
-                   .replace("/", "_")
-                   .replace("-", "_")
-            )
-
-            if not filename:
-                filename = "homepage"
-
-            Path("data").mkdir(exist_ok=True)
+            filename = safe_filename(url)
 
             Path(f"data/{filename}.md").write_text(
                 result.markdown,
