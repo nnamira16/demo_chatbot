@@ -69,13 +69,53 @@ def chat(data: ChatRequest):
     print("NEW CHAT REQUEST")
     print("==============================")
 
-    # Create embedding for question
+   #fixing chat history error
+
+    rewrite_start = time.time()
+
+    if data.history.strip():
+        rewrite_prompt = f"""
+    Rewrite the user's latest message as a standalone search query using the conversation history.
+
+    Rules:
+    - Do NOT answer the question.
+    - If the latest message already makes sense by itself, return it unchanged.
+    - If the latest message is vague, such as "yes", "sure", "tell me more",
+    "what about that?", or similar, use the previous conversation to determine
+    exactly what topic the user is continuing.
+    - Return ONLY the rewritten search query.
+
+    Conversation History:
+    {data.history}
+
+    Latest User Message:
+    {data.question}
+    """
+
+        rewrite_response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=rewrite_prompt
+        )
+
+        retrieval_query = rewrite_response.output_text.strip()
+
+    else:
+        retrieval_query = data.question
+
+
+    rewrite_time = time.time() - rewrite_start
+
+    print(f"Query rewrite time: {rewrite_time:.2f} seconds")
+    print(f"Original question: {data.question}")
+    print(f"Retrieval query: {retrieval_query}")
+
+
+
     embedding_start = time.time()
 
-    # Create embedding for question
     q_response = client.embeddings.create(
         model="text-embedding-3-small",
-        input=data.question
+        input=retrieval_query
     )
 
     embedding_time = time.time() - embedding_start
@@ -137,7 +177,7 @@ If a customer asks whether they can use Taelor based on gender, explain that Tae
 If information is unclear, acknowledge the limitation and suggest contacting Taelor support for more guidance. 
 Format guidance as follows:
 - Separate ideas with a blank line.
-- Use numbered steps for instructions.
+- Use numbered steps for instructions and skip a line after each step.
 - Use dot bullet points only when listing options.
 - Never write one long paragraph.
 - End with a friendly follow-up question when appropriate.
@@ -158,7 +198,7 @@ Question:
     generation_start = time.time()
 
     response = client.responses.create(
-        model="gpt-5-mini",
+        model="gpt-4.1-mini",
         input=prompt
     )
 
