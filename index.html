@@ -384,6 +384,90 @@ function addTypingIndicator() {
 //   return div;
 // }
 
+function formatMessage(text) {
+
+  // Convert markdown links [text](url) into clickable links
+  text = text.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank">$1</a>'
+  );
+
+  const lines = text.split("\n");
+
+  let html = "";
+  let inUL = false;
+  let inOL = false;
+
+  for (let line of lines) {
+
+    line = line.trim();
+
+    // Bullet points: -, *, or •
+    if (/^[-*•]\s+/.test(line)) {
+
+      if (inOL) {
+        html += "</ol>";
+        inOL = false;
+      }
+
+      if (!inUL) {
+        html += "<ul>";
+        inUL = true;
+      }
+
+      const item = line.replace(/^[-*•]\s+/, "");
+      html += `<li>${item}</li>`;
+
+      continue;
+    }
+
+    // Numbered lists: 1. or 1)
+    if (/^\d+[\.\)]\s+/.test(line)) {
+
+      if (inUL) {
+        html += "</ul>";
+        inUL = false;
+      }
+
+      if (!inOL) {
+        html += "<ol>";
+        inOL = true;
+      }
+
+      const item = line.replace(/^\d+[\.\)]\s+/, "");
+      html += `<li>${item}</li>`;
+
+      continue;
+    }
+
+    // Close any open list
+    if (inUL) {
+      html += "</ul>";
+      inUL = false;
+    }
+
+    if (inOL) {
+      html += "</ol>";
+      inOL = false;
+    }
+
+    // Normal text
+    if (line) {
+      html += `<div>${line}</div>`;
+    }
+  }
+
+  // Close lists if message ended with one
+  if (inUL) {
+    html += "</ul>";
+  }
+
+  if (inOL) {
+    html += "</ol>";
+  }
+
+  return html;
+}
 
 //new function for messages with timestamps
 
