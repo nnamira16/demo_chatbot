@@ -107,19 +107,11 @@
     padding: 0 4px;
     line-height: 1;
   }
-
-
-  .user {
-    align-self: flex-end;
-    background: #e2ac2d;
-    color: white;
+  
+  .timestamp.user {
+    color: #b07a12;
   }
 
-  .bot {
-    align-self: flex-start;
-    background: #f1ece7;
-    color: #222;
-  }
 
   .input-area {
     display: flex;
@@ -526,7 +518,7 @@ function addMessage(sender, text, type) {
   div.innerHTML = text;
 
   const timestamp = document.createElement("div");
-  timestamp.className = "timestamp";
+  timestamp.className = "timestamp" + MimeType;
 
   const now = new Date();
 
