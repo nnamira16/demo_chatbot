@@ -86,18 +86,23 @@
   .msg.user {
     border-bottom-right-radius: 7px;
     box-shadow: 0 3px 10px rgba(158, 112, 24, 0.12);
+    align-self: flex-end;
+    background: #e2ac2d;
+    color: white;
   }
 
   .msg.bot {
     background: #f5f0eb;
     border-bottom-left-radius: 7px;
     box-shadow: 0 3px 10px rgba(71, 48, 29, 0.05);
+    color: #222;
+    align-self: flex-start;
   }
 
-    .message-wrapper.bot {
-      align-items: flex-start;
-      align-self: flex-start;
-    }
+  .message-wrapper.bot {
+    align-items: flex-start;
+    align-self: flex-start;
+  }
 
 
   .timestamp {
@@ -107,10 +112,10 @@
     padding: 0 4px;
     line-height: 1;
   }
-  
+
   .timestamp.user {
     color: #b07a12;
-  }
+  } 
 
 
   .input-area {
@@ -422,6 +427,11 @@ function formatMessage(text) {
     '<a href="$2" target="_blank">$1</a>'
   );
 
+  text = text.replace(
+    /(^|[\s>])(https?:\/\/[^\s<]+)/g,
+    '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>'
+  );
+
   const lines = text.split("\n");
 
   let html = "";
@@ -518,7 +528,7 @@ function addMessage(sender, text, type) {
   div.innerHTML = text;
 
   const timestamp = document.createElement("div");
-  timestamp.className = "timestamp" + MimeType;
+  timestamp.className = "timestamp " + type;
 
   const now = new Date();
 
