@@ -1,4 +1,4 @@
-# convert_index.py
+# yes vert_index.py
 import os
 import pickle
 import sys

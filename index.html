@@ -64,17 +64,6 @@
     background: #faf9f7;
   }
 
-  .msg {
-    padding: 11px 15px;
-    border-radius: 18px;
-    max-width: 100%;
-    font-size: 14px;
-    line-height: 1.5;
-    width: fit-content;
-
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
 
   .message-wrapper {
     display: flex;
@@ -88,23 +77,27 @@
     max-width: 84%;
   }
 
-  .message-wrapper.bot {
-    align-items: flex-start;
-    align-self: flex-start;
+
+  .msg {
+    padding: 12px 15px;
+    border-radius: 22px;
   }
 
   .msg.user {
-    background: #e2ac2d;
-    color: white;
-    border-bottom-right-radius: 6px;
+    border-bottom-right-radius: 7px;
+    box-shadow: 0 3px 10px rgba(158, 112, 24, 0.12);
   }
 
   .msg.bot {
-    background: #f1ece7;
-    color: #222;
-    border-bottom-left-radius: 6px;
+    background: #f5f0eb;
+    border-bottom-left-radius: 7px;
+    box-shadow: 0 3px 10px rgba(71, 48, 29, 0.05);
   }
 
+    .message-wrapper.bot {
+      align-items: flex-start;
+      align-self: flex-start;
+    }
 
 
   .timestamp {
@@ -442,6 +435,7 @@ function formatMessage(text) {
   let html = "";
   let inUL = false;
   let inOL = false;
+  let orderedListStart = 1;
 
   for (let line of lines) {
 
@@ -475,7 +469,8 @@ function formatMessage(text) {
       }
 
       if (!inOL) {
-        html += "<ol>";
+        orderedListStart = Number(line.match(/^(\d+)[\.\)]\s+/)[1]);
+        html += `<ol start="${orderedListStart}">`;
         inOL = true;
       }
 
@@ -513,6 +508,8 @@ function formatMessage(text) {
 
   return html;
 }
+
+
 
 //new function for messages with timestamps
 
@@ -559,11 +556,16 @@ function sleep(ms) {
 
 async function addBotMessages(text) {
 
-    // Split on blank lines first
-    let parts = text
-        .split(/\n\s*\n/)
-        .map(p => p.trim())
-        .filter(p => p.length > 0);
+    //Split the text into parts based on numbered steps or paragraphs
+    const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+    const hasNumberedSteps = lines.some(line => /^\d+[\.\)]\s+/.test(line));
+
+    let parts = hasNumberedSteps
+        ? lines
+        : text
+            .split(/\n\s*\n/)
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
 
     // If Gemini didn't use blank lines,
     // split long paragraphs into sentences.
